@@ -1,0 +1,155 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider          = "mysql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+model User {
+  id           BigInt    @id @default(autoincrement())
+  role         String
+  email        String    @unique
+  password     String
+  name         String
+  profileImage String?
+  deletedTime  DateTime?
+  createdTime  DateTime  @default(now())
+  updatedTime  DateTime?
+
+  socials         Social[]
+  resumes         Resume[]
+  resumeScripts   ResumeScript[]
+  resumeKeywords  ResumeKeyword[]
+  resumeQuestions ResumeQuestion[]
+  analyses        Analysis[]
+  commonScripts   CommonScript[]
+  commonKeywords  CommonKeyword[]
+}
+
+model Resume {
+  id          BigInt    @id @default(autoincrement())
+  userId      BigInt
+  name        String
+  filePath    String
+  createdTime DateTime  @default(now())
+  updatedTime DateTime?
+
+  user      User             @relation(fields: [userId], references: [id])
+  questions ResumeQuestion[]
+  scripts   ResumeScript[]
+  keywords  ResumeKeyword[]
+}
+
+model ResumeQuestion {
+  id          BigInt    @id @default(autoincrement())
+  resumeId    BigInt
+  question    String
+  createdTime DateTime  @default(now())
+  updatedTime DateTime?
+
+  resume Resume @relation(fields: [resumeId], references: [id], map: "ResumeQuestionToResume")
+  user   User?  @relation(fields: [resumeId], references: [id]) // optional로 추가 X ❌
+}
+
+model ResumeScript {
+  id          BigInt    @id @default(autoincrement())
+  userId      BigInt
+  questionId  BigInt
+  resumeId    BigInt // ✅ 추가됨
+  script      String
+  createdTime DateTime  @default(now())
+  updatedTime DateTime?
+
+  user   User   @relation(fields: [userId], references: [id])
+  resume Resume @relation(fields: [resumeId], references: [id], map: "ResumeScriptToResume")
+}
+
+model ResumeKeyword {
+  id          BigInt    @id @default(autoincrement())
+  userId      BigInt
+  questionId  BigInt
+  resumeId    BigInt // ✅ 추가됨
+  keyword     String
+  createdTime DateTime  @default(now())
+  updatedTime DateTime?
+
+  user   User   @relation(fields: [userId], references: [id])
+  resume Resume @relation(fields: [resumeId], references: [id], map: "ResumeKeywordToResume")
+}
+
+model CommonCategory {
+  id          BigInt           @id @default(autoincrement())
+  category    String           @unique
+  createdTime DateTime         @default(now())
+  updatedTime DateTime?
+  questions   CommonQuestion[]
+}
+
+model CommonQuestion {
+  id          BigInt    @id @default(autoincrement())
+  categoryId  BigInt
+  question    String
+  createdTime DateTime  @default(now())
+  updatedTime DateTime?
+
+  category CommonCategory  @relation(fields: [categoryId], references: [id])
+  scripts  CommonScript[]
+  keywords CommonKeyword[]
+}
+
+model CommonScript {
+  id          BigInt    @id @default(autoincrement())
+  userId      BigInt
+  questionId  BigInt
+  script      String
+  createdTime DateTime  @default(now())
+  updatedTime DateTime?
+
+  user     User           @relation(fields: [userId], references: [id])
+  question CommonQuestion @relation(fields: [questionId], references: [id])
+}
+
+model CommonKeyword {
+  id          BigInt    @id @default(autoincrement())
+  userId      BigInt
+  questionId  BigInt
+  keyword     String
+  createdTime DateTime  @default(now())
+  updatedTime DateTime?
+
+  user     User           @relation(fields: [userId], references: [id])
+  question CommonQuestion @relation(fields: [questionId], references: [id])
+}
+
+model Analysis {
+  id                BigInt    @id @default(autoincrement())
+  userId            BigInt
+  type              String // 실전(main), 모의(mock)
+  question          String
+  videoPath         String
+  thumbnailPath     String
+  keyword           String
+  setStartTime      DateTime
+  analysisReqTime   DateTime  @default(now())
+  analysisStartTime DateTime
+  analysisEndTime   DateTime?
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Social {
+  id          BigInt   @id @default(autoincrement())
+  provider    String   // 'kakao'
+  providerId  BigInt   // from Kakao 'id'
+  user        User     @relation(fields: [userId], references: [id])
+  userId      BigInt
+}
