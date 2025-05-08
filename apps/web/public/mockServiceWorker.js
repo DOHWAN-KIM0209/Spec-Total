@@ -3,6 +3,7 @@
 
 /**
  * Mock Service Worker.
+ * @see https://github.com/mswjs/msw
  * - Please do NOT modify this file.
  * - Please do NOT serve this file on production.
  */
@@ -19,6 +20,7 @@ self.addEventListener('install', function () {
 self.addEventListener('activate', function (event) {
   event.waitUntil(self.clients.claim())
 })
+
 self.addEventListener('message', async function (event) {
   const clientId = event.source.id
 

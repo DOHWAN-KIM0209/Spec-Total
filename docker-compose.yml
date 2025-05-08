@@ -1,0 +1,32 @@
+version: '3.9'
+
+services:
+  backend:
+    build: ./apps/backend
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./apps/backend:/app
+    working_dir: /app
+    command: npm start
+    restart: unless-stopped
+
+  ai:
+    build: ./apps/ai
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./apps/ai:/app
+    working_dir: /app
+    command: python main.py
+    restart: unless-stopped
+
+  web:
+    build: ./apps/web
+    ports:
+      - "3000:80"
+    volumes:
+      - ./apps/web:/app
+    working_dir: /app
+    command: npm run dev
+    restart: unless-stopped

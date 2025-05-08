@@ -1,7 +1,6 @@
 FROM python:3.11-slim AS builder
 
 ENV PYTHONUNBUFFERED=1
-
 WORKDIR /app
 
 COPY pyproject.toml poetry.lock ./
@@ -16,6 +15,7 @@ RUN apt-get update && \
 
 COPY . .
 
+# --- 최종 이미지 ---
 FROM python:3.11-slim
 
 WORKDIR /app
@@ -30,3 +30,6 @@ COPY --from=builder /app /app
 RUN poetry config virtualenvs.create false && \
     apt-get update && \
     apt-get install -y libquadmath0 libgomp1 libgl1-mesa-glx libglib2.0-0 ffmpeg
+
+EXPOSE 5000
+CMD ["python", "main.py"]
